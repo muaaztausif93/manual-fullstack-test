@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  db:
+    container_name: openhouse-db
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '5432:5432'
+    networks:
+      - backend
+    volumes:
+      - openhouse-db:/var/lib/postgresql/data
+
+  openhouse:
+    container_name: openhouse
+    image: node:16.10.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      PORT: ${PORT}
+    depends_on:
+      - db
+    links:
+      - db
+    networks:
+      - backend
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./:/usr/src/app
+
+volumes:
+  openhouse-db:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
