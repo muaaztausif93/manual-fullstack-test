@@ -120,8 +120,8 @@
           this.$toast.success(res.data.message);
         })
         .catch(err => {
-          console.log(err);
           this.loader.hide();
+          this.$toast.error(err.response.data.message);
         });
       },
       unenrollTenant(userId) {
@@ -131,8 +131,8 @@
           this.$toast.success(res.data.message);
         })
         .catch(err => {
-          console.log(err);
           this.loader.hide();
+          this.$toast.error(err.response.data.message);
         });
       },
       fetchPropertyDetails() {
@@ -146,8 +146,8 @@
           this.loader.hide();
         })
         .catch(err => {
-          console.log(err);
           this.loader.hide();
+          this.$toast.error(err.response.data.message);
         });
       },
       fetchTenants() {

@@ -1,17 +1,19 @@
 <template>
   <div class="vertical-center">
     <div class="inner-block">
-      <form>
+      <Form @submit="signIn" :validation-schema="signInValidationSchema">
         <h3 class="mb-3 text-center">Sign In</h3>
 
         <div class="form-group">
           <label class="mb-0">Email address</label>
-          <input type="email" class="form-control" v-model="signInForm.email" />
+          <Field name="email" type="email" class="form-control" />
+          <ErrorMessage name="email" class="field-error" />
         </div>
 
         <div class="form-group">
           <label class="mb-0">Password</label>
-          <input type="password" class="form-control" v-model="signInForm.password" />
+          <Field name="password" type="password" class="form-control" />
+          <ErrorMessage name="password" class="field-error" />
         </div>
 
         <div class="mt-2">
@@ -19,37 +21,43 @@
         </div>
 
         <button
-          type="button"
-          class="btn btn-primary btn-block mt-2"
-          v-on:click="signIn()">
+          type="submit"
+          class="btn btn-primary btn-block mt-2">
           Sign In
         </button>
-      </form>
+      </Form>
     </div>
   </div>
 </template>
 
 <script>
-  import router from '@/router/index';
+  import { Form, Field, ErrorMessage } from 'vee-validate';
+  import * as Yup from 'yup';
 
   export default {
     name: 'SignInView',
     data() {
       return {
         loader: null,
-        signInForm: {
-          email: '',
-          password: ''
-        }
+        signInValidationSchema: Yup.object({
+          email: Yup.string().email().required(),
+          password: Yup.string().required(),
+        })
       }
     },
+    components: {
+      Form,
+      Field,
+      ErrorMessage
+    },
     methods: {
-      signIn() {
+      signIn(values) {
+        if (!values) return;
         this.loader = this.$loading.show();
-        this.$store.dispatch('auth/login', this.signInForm)
+        this.$store.dispatch('auth/login', values)
         .then(() => {
           this.loader.hide();
-          router.push('/properties');
+          location.href = '/properties';
         })
         .catch(err => {
           this.loader.hide();

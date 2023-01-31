@@ -1,90 +1,109 @@
 <template>
   <div class="vertical-center">
     <div class="inner-block">
-      <form>
+      <Form @submit="signUp" :validation-schema="signUpValidationSchema">
         <h3 class="mb-3 text-center">Sign Up</h3>
 
         <div class="form-group">
           <label class="mb-0">Name</label>
-          <input type="text" class="form-control" v-model="userForm.name" />
+          <Field name="name" type="text" class="form-control" />
+          <ErrorMessage name="name" class="field-error" />
         </div>
 
         <div class="form-group">
           <label class="mb-0">Email address</label>
-          <input type="email" class="form-control" v-model="userForm.email" />
+          <Field name="email" type="email" class="form-control" />
+          <ErrorMessage name="email" class="field-error" />
         </div>
 
         <div class="form-group">
           <label class="mb-0">Password</label>
-          <input type="password" class="form-control" v-model="userForm.password" />
+          <Field name="password" type="password" class="form-control" />
+          <ErrorMessage name="password" class="field-error" />
         </div>
 
         <div class="form-group">
           <label class="mb-0">Confirm Password</label>
-          <input type="password" class="form-control" v-model="userForm.confirmPassword" />
+          <Field name="confirmPassword" type="password" class="form-control" />
+          <ErrorMessage name="confirmPassword" class="field-error" />
         </div>
 
         <div class="form-check">
-          <input
-            v-model="userForm.type"
+          <Field
             class="form-check-input"
             type="radio"
             name="userType"
             value="admin"
-            id="admin">
+            id="admin" />
           <label class="form-check-label" for="admin">
             Moderator
           </label>
         </div>
         <div class="form-check">
-          <input
-            v-model="userForm.type"
+          <Field
             class="form-check-input"
             type="radio"
             name="userType"
             id="tenant"
-            value="tenant">
+            value="tenant" />
           <label class="form-check-label" for="tenant">
             Tenant
           </label>
+
+          <div class="ml-n4">
+            <ErrorMessage name="userType" class="field-error" />
+          </div>
         </div>
 
         <button
-          type="button"
+          type="submit"
           class="btn btn-primary btn-block mt-2"
           v-on:click="signUp()">
           Create Account
         </button>
-      </form>
+      </Form>
     </div>
   </div>
 </template>
 
 <script>
-  import router from '@/router/index';
+  import { Form, Field, ErrorMessage } from 'vee-validate';
+  import * as Yup from 'yup';
 
   export default {
     name: 'SignUpView',
     data() {
       return {
         loader: null,
-        userForm: {
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          type: ''
-        }
+        signUpValidationSchema: Yup.object({
+          name: Yup.string().required(),
+          email: Yup.string().email().required(),
+          password: Yup.string().min(6).required(),
+          confirmPassword: Yup.string().min(6).required(),
+          userType: Yup.string().required()
+        })
       }
     },
+    components: {
+      Form,
+      Field,
+      ErrorMessage
+    },
     methods: {
-      signUp() {
+      signUp(values) {
+        if (!values) return;
+
         this.loader = this.$loading.show();
-        delete this.userForm.confirmPassword;
-        this.$store.dispatch('auth/register', this.userForm)
+        const formData = {
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          type: values.userType
+        };
+        this.$store.dispatch('auth/register', formData)
         .then(() => {
           this.loader.hide();
-          router.push('/properties');
+          location.href = '/properties';
         })
         .catch(err => {
           this.loader.hide();
